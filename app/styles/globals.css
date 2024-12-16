@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+input:-webkit-autofill {
+  background-color: #374151 !important; /* bg-gray-700 equivalent */
+  color: #ffffff !important; /* Ensure text color is white */
+  border: 1px solid #4b5563; /* Match the border color */
+  -webkit-text-fill-color: #ffffff; /* Ensures text is visible */
+  transition: background-color 5000s ease-in-out 0s; /* Prevent flashing */
+}
