@@ -97,7 +97,7 @@ export default function Gpa() {
       .filter((semester) => semester.courses.length > 0); // Ensure semesters with no valid courses are removed
 
     if (filteredSemestersData.length > 0) {
-      console.log("Filtered Data:", filteredSemestersData);
+      // console.log("Filtered Data:", filteredSemestersData);
       try {
         // Send data in the POST request to /api/sem
         await axios.post("/api/sem", { semestersData: filteredSemestersData });

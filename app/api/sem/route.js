@@ -64,7 +64,7 @@ export async function POST(req) {
 
             // Log invalid data for debugging
             if (!allValuesPresent || !creditsValid || !isValidGrade) {
-              console.log("Invalid Course Data:", course);
+              // console.log("Invalid Course Data:", course);
             }
 
             return allValuesPresent && creditsValid && isValidGrade;
@@ -75,7 +75,7 @@ export async function POST(req) {
 
             // Log grade points assignment
             if (!gradePoint) {
-              console.log("Invalid grade for course:", course);
+              // console.log("Invalid grade for course:", course);
             }
 
             return {
@@ -85,8 +85,8 @@ export async function POST(req) {
           });
 
         // Log the filtered courses for debugging
-        console.log("Semester Name:", semesterName);
-        console.log("Filtered Courses:", filteredCourses);
+        // console.log("Semester Name:", semesterName);
+        // console.log("Filtered Courses:", filteredCourses);
 
         return {
           semesterName,
@@ -110,7 +110,7 @@ export async function POST(req) {
       userSemester.semesters = [...processedSemesters]; // Spread processed semesters into the array
 
       // Save the updated semester data
-      console.log(userSemester);
+      // console.log(userSemester);
       await userSemester.save();
       return NextResponse.json(userSemester, { status: 200 });
     } else {

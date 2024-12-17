@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import cookie from "cookie";
-import jwt from "jsonwebtoken";
-import Semester from "../../../models/semester";
-import connectToDatabase from "../../../lib/dbConnect";
+import cookie from "cookie"; // For cookie parsing
+import jwt from "jsonwebtoken"; // For JWT verification
+import Semester from "../../../models/semester"; // Import the Semester model
+import connectToDatabase from "../../../lib/dbConnect"; // Import the connection function
 
 // Grade-to-grade points mapping
 const gradePointsMap = {
@@ -113,12 +113,7 @@ function generateOptimizedCombinations(
 
       // Check if the combination meets the targets
       if (sgpa >= targetSGPA && cgpa >= targetCGPA) {
-        results.push({
-          updatedSem4,
-          sgpa,
-          cgpa,
-          combination_no: results.length + 1, // Incremental combination number
-        });
+        results.push({ updatedSem4, sgpa, cgpa });
       }
 
       return;
@@ -136,18 +131,15 @@ function generateOptimizedCombinations(
   }
 
   recurse(0);
-
-  return {
-    possibleCombinationsCount: results.length,
-    optimizedCombinations: results,
-  };
+  return results;
 }
 
 function saveSemesterData(semestersData) {
+  // Transform the data into the required format
   const semesters = {};
 
   semestersData.forEach((semester, index) => {
-    const semesterKey = `semester${index + 1}`;
+    const semesterKey = `semester${index + 1}`; // Create keys like semester1, semester2, etc.
     const courses = semester.courses.map((course) => ({
       code: course.code,
       credits: course.credits,
@@ -158,14 +150,15 @@ function saveSemesterData(semestersData) {
     semesters[semesterKey] = courses;
   });
 
-  return semesters;
+  return semesters; // Return the semesters object after the loop completes
 }
 
 export async function GET(req) {
   try {
+    // Connect to the database
     await connectToDatabase();
 
-    // Get current user from cookies
+    // Get the current user from cookies
     const cookies = req.headers.get("cookie");
     if (!cookies) {
       return NextResponse.json({ error: "No cookies found" }, { status: 400 });
@@ -181,10 +174,10 @@ export async function GET(req) {
       );
     }
 
-    // Verify and decode JWT token
-    const decodedUser = jwt.verify(userToken, process.env.JWT_SECRET_KEY);
+    // Verify and decode the JWT token to get the user ID
+    const decodedUser = jwt.verify(userToken, process.env.JWT_SECRET_KEY); // Verify and decode JWT
 
-    // Find user semester data
+    // Find the user semester document
     const userSemester = await Semester.findOne({ userId: decodedUser.id });
 
     if (!userSemester) {
@@ -194,10 +187,11 @@ export async function GET(req) {
       );
     }
 
+    // Return the semester data for the user
     const data = userSemester.semesters;
     const modified_data = saveSemesterData(data);
 
-    // Add semester4 data
+    // Use the correct semester name as a string key
     modified_data["semester4"] = [
       { code: "APL105", credits: 4 },
       { code: "ASL385", credits: 3 },
@@ -207,52 +201,52 @@ export async function GET(req) {
       { code: "TXL241", credits: 4.5 },
     ];
 
+    // console.log(modified_data); 
+    // Check the updated modified_data
     const semesters = modified_data;
     const sgpaSem1 = calculateSGPA(semesters.semester1);
     const sgpaSem2 = calculateSGPA(semesters.semester2);
     const sgpaSem3 = calculateSGPA(semesters.semester3);
     const cgpa = calculateCGPA_particular(semesters, 3);
 
+    // Define targets
     const targetSGPA = 8;
     const targetCGPA = 7;
 
     const optimizedCombinations = generateOptimizedCombinations(
-      semesters.semester4,
-      targetCGPA,
-      targetSGPA,
-      semesters
+      semesters.semester4, // Assuming this data is available
+      targetCGPA, // Assuming this data is available
+      targetSGPA, // Assuming this data is available
+      semesters // Assuming this data is available
     );
 
-    // Pagination handling
-    const url = new URL(req.url, "http://example.com");
-    const { page = 1, limit = 5 } = Object.fromEntries(
-      url.searchParams.entries()
-    );
-
-    const currentPage = parseInt(page, 10);
-    const currentLimit = parseInt(limit, 10);
-
-    const startIndex = (currentPage - 1) * currentLimit;
-    const paginatedCombinations =
-      optimizedCombinations.optimizedCombinations.slice(
-        startIndex,
-        startIndex + currentLimit
-      );
-
-    const responseData = {
-      sgpaSem1,
-      sgpaSem2,
-      sgpaSem3,
-      cgpa,
-      possibleCombinationsCount:
-        optimizedCombinations.possibleCombinationsCount,
-      currentPage,
-      totalPages: Math.ceil(
-        optimizedCombinations.possibleCombinationsCount / currentLimit
-      ),
-      optimizedCombinations: paginatedCombinations,
+    const getDistributionData = (combinations, key) => {
+      const distribution = {};
+      combinations.forEach((combination) => {
+        const value = combination[key];
+        distribution[value] = distribution[value] ? distribution[value] + 1 : 1;
+      });
+      return Object.keys(distribution).map((value) => ({
+        name: value,
+        count: distribution[value],
+      }));
     };
 
+    let chartData = [];
+
+    let sgpaChartData = [];
+
+    const cgpaDistribution = getDistributionData(optimizedCombinations, "cgpa");
+    chartData = cgpaDistribution;
+
+    const sgpaDistribution = getDistributionData(optimizedCombinations, "sgpa");
+    sgpaChartData = sgpaDistribution;
+
+    const responseData = {
+      cgpaDistribution,
+      sgpaDistribution,
+    };
+    // Send the response with status 200
     return NextResponse.json(responseData, { status: 200 });
   } catch (error) {
     console.error("Error fetching semester data:", error);
