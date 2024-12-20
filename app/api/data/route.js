@@ -3,6 +3,7 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import Semester from "../../../models/semester";
 import connectToDatabase from "../../../lib/dbConnect";
+import CurrentSemester from "../../../models/predict_semester";
 
 // Grade-to-grade points mapping
 const gradePointsMap = {
@@ -196,16 +197,39 @@ export async function GET(req) {
 
     const data = userSemester.semesters;
     const modified_data = saveSemesterData(data);
+    const current_semester_data = await CurrentSemester.findOne({
+      userId: decodedUser.id,
+    });
+    function transformData(sem) {
+      let modified_data = {};
 
+      // Ensure that the semesters array exists
+      if (sem && sem.semesters && sem.semesters.length > 0) {
+        sem.semesters.forEach((semester, index) => {
+          const semesterKey = `semester${index + 1}`; // Dynamic key for semester (semester1, semester2, etc.)
+
+          // Map the courses to include only code and credits
+          modified_data[semesterKey] = semester.courses.map((course) => ({
+            code: course.code,
+            credits: course.credits,
+          }));
+        });
+      }
+
+      return modified_data;
+    }
+    const transformedData = transformData(current_semester_data);
+    let firstKey = Object.keys(transformedData)[0];
+    modified_data["semester4"] = transformedData[firstKey];
     // Add semester4 data
-    modified_data["semester4"] = [
-      { code: "APL105", credits: 4 },
-      { code: "ASL385", credits: 3 },
-      { code: "TXL211", credits: 3 },
-      { code: "TXL221", credits: 4 },
-      { code: "TXL231", credits: 4 },
-      { code: "TXL241", credits: 4.5 },
-    ];
+    // modified_data["semester4"] = [
+    //   { code: "APL105", credits: 4 },
+    //   { code: "ASL385", credits: 3 },
+    //   { code: "TXL211", credits: 3 },
+    //   { code: "TXL221", credits: 4 },
+    //   { code: "TXL231", credits: 4 },
+    //   { code: "TXL241", credits: 4.5 },
+    // ];
 
     const semesters = modified_data;
     const sgpaSem1 = calculateSGPA(semesters.semester1);

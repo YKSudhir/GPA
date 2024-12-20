@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Importing the styles
 import axios from "axios";
-import Link from "next/link"
+import Link from "next/link";
 
 export default function Gpa() {
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -120,27 +120,27 @@ export default function Gpa() {
   return (
     <div className="bg-gray-900 text-white min-h-screen flex flex-col items-center pt-[40px] justify-center pb-20">
       <div className="mb-4 flex flex-col justify-center items-center">
-  <p className="text-gray-400 text-center">
-    If you have already entered semester data, go to Analysis. Otherwise, please enter the data.
-  </p>
+        <p className="text-gray-400 text-center">
+          If you have already entered old semester data, Pleaes go to add
+          current sem data.
+        </p>
 
-  <a
-    href={loading ? "javascript:void(0)" : "/dashboard/data"} // Prevent navigation during loading
-    className={`px-6 py-3 rounded mt-6 w-full text-white transition duration-300 ease-in-out 
+        <a
+          href={loading ? "javascript:void(0)" : "/dashboard/currentsem"} // Prevent navigation during loading
+          className={`px-6 py-3 rounded mt-6 w-1/2 text-center text-white transition duration-300 ease-in-out 
       ${loading ? "bg-blue-400 cursor-wait" : "bg-blue-600 hover:bg-blue-700"}`}
-    onClick={(e) => {
-      if (loading) e.preventDefault(); // Block navigation if loading
-    }}
-    aria-label={loading ? "Loading, please wait" : "Go to Analysis"} // Accessibility
-  >
-    {loading ? (
-      <span className="animate-spin">Loading...</span> // Loading animation
-    ) : (
-      "Go to Analysis"
-    )}
-  </a>
-</div>
-
+          onClick={(e) => {
+            if (loading) e.preventDefault(); // Block navigation if loading
+          }}
+          aria-label={loading ? "Loading, please wait" : "Go to Analysis"} // Accessibility
+        >
+          {loading ? (
+            <span className="animate-spin">Loading...</span> // Loading animation
+          ) : (
+            "Current Sem"
+          )}
+        </a>
+      </div>
 
       <div className="p-6 w-full sm:w-3/4 md:w-1/2 lg:w-1/3 bg-gray-800 rounded-lg shadow-xl mx-4 md:mx-0">
         <h2 className="text-3xl font-semibold mb-6 text-center">
@@ -168,7 +168,6 @@ export default function Gpa() {
               <option value="semester1">Semester 1</option>
               <option value="semester2">Semester 2</option>
               <option value="semester3">Semester 3</option>
-              <option value="semester4">Semester 4</option>
             </select>
           </div>
 
@@ -284,7 +283,6 @@ export default function Gpa() {
         </div>
         <ToastContainer /> {/* Add ToastContainer to render toast messages */}
       </div>
-
     </div>
   );
 }
